@@ -136,3 +136,33 @@ BEGIN
         percent_grade_0, percent_grade_1, percent_grade_2, percent_grade_3, percent_grade_4, percent_grade_5, percent_grade_6, percent_grade_7;
 END;
 $$;
+
+
+-- 1.5 Escreva as seguintes functions (incluindo um bloco anônimo de teste para cada uma):
+
+-- 1.5.1 Responde (devolve boolean) se é verdade que todos os estudantes de renda acima de
+-- 410 são aprovados (grade > 0).
+
+CREATE OR REPLACE FUNCTION fn_aprovados() RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    resultado BOOLEAN;
+BEGIN
+    SELECT EXISTS (SELECT 1 FROM tb_students WHERE salary = 5 AND grade = 0) INTO resultado;
+    IF resultado THEN
+        RETURN FALSE;
+    ELSE
+        RETURN TRUE;
+    END IF;
+END;
+$$;
+
+DO $$
+DECLARE
+    resultado BOOLEAN;
+BEGIN
+    resultado := fn_aprovados();
+    RAISE NOTICE 'Resultado: %', resultado;
+END;
+$$;
