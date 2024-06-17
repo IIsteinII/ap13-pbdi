@@ -64,3 +64,75 @@ BEGIN
     resultado_F, resultado_M;
 END;
 $$
+
+-- 1.4.3 Recebe um sexo como parâmetro em modo IN e utiliza oito parâmetros em modo OUT
+-- para dizer qual o percentual de cada nota (variável grade) obtida por estudantes daquele sexo.
+
+CREATE OR REPLACE PROCEDURE sp_calcula_grade_percent(
+    IN input_gender INT,
+    OUT percent_grade_0 NUMERIC,
+    OUT percent_grade_1 NUMERIC,
+    OUT percent_grade_2 NUMERIC,
+    OUT percent_grade_3 NUMERIC,
+    OUT percent_grade_4 NUMERIC,
+    OUT percent_grade_5 NUMERIC,
+    OUT percent_grade_6 NUMERIC,
+    OUT percent_grade_7 NUMERIC
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    total_students INT;
+BEGIN
+    percent_grade_0 := 0;
+    percent_grade_1 := 0;
+    percent_grade_2 := 0;
+    percent_grade_3 := 0;
+    percent_grade_4 := 0;
+    percent_grade_5 := 0;
+    percent_grade_6 := 0;
+    percent_grade_7 := 0;
+    SELECT COUNT(*) INTO total_students FROM tb_students WHERE gender = input_gender;
+    IF total_students = 0 THEN
+        RETURN;
+    END IF;
+    SELECT
+        (COUNT(*) FILTER (WHERE grade = 0)::NUMERIC / total_students) * 100,
+        (COUNT(*) FILTER (WHERE grade = 1)::NUMERIC / total_students) * 100,
+        (COUNT(*) FILTER (WHERE grade = 2)::NUMERIC / total_students) * 100,
+        (COUNT(*) FILTER (WHERE grade = 3)::NUMERIC / total_students) * 100,
+        (COUNT(*) FILTER (WHERE grade = 4)::NUMERIC / total_students) * 100,
+        (COUNT(*) FILTER (WHERE grade = 5)::NUMERIC / total_students) * 100,
+        (COUNT(*) FILTER (WHERE grade = 6)::NUMERIC / total_students) * 100,
+        (COUNT(*) FILTER (WHERE grade = 7)::NUMERIC / total_students) * 100
+    INTO
+        percent_grade_0,
+        percent_grade_1,
+        percent_grade_2,
+        percent_grade_3,
+        percent_grade_4,
+        percent_grade_5,
+        percent_grade_6,
+        percent_grade_7
+    FROM tb_students
+    WHERE gender = input_gender;
+END;
+$$;
+
+DO $$
+DECLARE
+    percent_grade_0 NUMERIC;
+    percent_grade_1 NUMERIC;
+    percent_grade_2 NUMERIC;
+    percent_grade_3 NUMERIC;
+    percent_grade_4 NUMERIC;
+    percent_grade_5 NUMERIC;
+    percent_grade_6 NUMERIC;
+    percent_grade_7 NUMERIC;
+BEGIN
+    CALL sp_calcula_grade_percent(1, percent_grade_0, percent_grade_1, percent_grade_2, percent_grade_3, percent_grade_4, percent_grade_5, percent_grade_6, percent_grade_7);
+
+    RAISE NOTICE 'Percentual de notas para o sexo 1: 0: %, 1: %, 2: %, 3: %, 4: %, 5: %, 6: %, 7: %', 
+        percent_grade_0, percent_grade_1, percent_grade_2, percent_grade_3, percent_grade_4, percent_grade_5, percent_grade_6, percent_grade_7;
+END;
+$$;
