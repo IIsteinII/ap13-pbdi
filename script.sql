@@ -166,3 +166,39 @@ BEGIN
     RAISE NOTICE 'Resultado: %', resultado;
 END;
 $$;
+
+
+-- 1.5.2 Responde (devolve boolean) se é verdade que, entre os estudantes que fazem
+-- anotações pelo menos algumas vezes durante as aulas, pelo menos 70% são aprovados
+-- (grade > 0).
+
+CREATE OR REPLACE FUNCTION fn_checa_aprovados_anot() RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    total_students INT;
+    aprovados_students INT;
+    percent_aprovados NUMERIC;
+BEGIN
+    SELECT COUNT(*) INTO total_students FROM tb_students WHERE notes > 0;
+    SELECT COUNT(*) INTO aprovados_students FROM tb_students WHERE notes > 0 AND grade > 0;
+    IF total_students = 0 THEN
+        RETURN FALSE;
+    END IF;
+    percent_aprovados := (aprovados_students::NUMERIC / total_students) * 100;
+    IF percent_aprovados >= 70 THEN
+        RETURN TRUE;
+    ELSE
+        RETURN FALSE;
+    END IF;
+END;
+$$;
+
+DO $$
+DECLARE
+    resultado BOOLEAN;
+BEGIN
+    resultado := fn_checa_aprovados_anot();
+    RAISE NOTICE 'Resultado: %', resultado;
+END;
+$$;
