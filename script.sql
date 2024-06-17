@@ -202,3 +202,34 @@ BEGIN
     RAISE NOTICE 'Resultado: %', resultado;
 END;
 $$;
+
+
+-- 1.5.3 Devolve o percentual de alunos que se preparam pelo menos um pouco para os
+-- “midterm exams” e que são aprovados (grade > 0).
+
+CREATE OR REPLACE FUNCTION fn_calcula_preparados() RETURNS NUMERIC
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    total_students_preparados INT;
+    students_preparados_aprovados INT;
+    percent_aprovados NUMERIC;
+BEGIN
+    SELECT COUNT(*) INTO total_students_preparados FROM tb_students WHERE prep_exam > 0;
+    SELECT COUNT(*) INTO students_preparados_aprovados FROM tb_students WHERE prep_exam > 0 AND grade > 0;
+    IF total_students_preparados = 0 THEN
+        RETURN 0;
+    END IF;
+    percent_aprovados := (students_preparados_aprovados::NUMERIC / total_students_preparados) * 100;
+    RETURN percent_aprovados;
+END;
+$$;
+
+DO $$
+DECLARE
+    percent_aprovados NUMERIC;
+BEGIN
+    percent_aprovados := fn_calcula_preparados();
+    RAISE NOTICE 'Percentual de alunos aprovados que se preparam para os exames intermediários: %', percent_aprovados;
+END;
+$$;
